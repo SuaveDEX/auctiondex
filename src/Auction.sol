@@ -138,9 +138,12 @@ contract Auction {
         // matching logic
         uint matchedVol = 0;
         uint volPrice = 0;
-        uint bidI = bids.length - 1;
+        // Has to be int so we can go negative
+        int bidI_ = int(bids.length - 1);
+        uint bidI;
         uint askI = 0;
-        while (bidI >= 0 && askI < asks.length) {
+        while (bidI_ >= 0 && askI < asks.length) {
+            bidI = uint(bidI_);
             // skip any cancelled orders
             string memory clientIdAsk = asks[askI].clientId;
             string memory clientIdBid = bids[bidI].clientId;
@@ -149,7 +152,7 @@ contract Auction {
                 continue;
             }
             if (cancels[clientIdBid]) {
-                bidI--;
+                bidI_--;
                 continue;
             }
 
@@ -166,13 +169,13 @@ contract Auction {
                     matchedVol += bids[bidI].amount;
                     volPrice += midPrice * bids[bidI].amount;
                     asks[askI].amount -= bids[bidI].amount;
-                    bidI--;
+                    bidI_--;
                 }
                 // Same vol...
                 else {
                     matchedVol += bids[bidI].amount;
                     volPrice += midPrice * bids[bidI].amount;
-                    bidI--;
+                    bidI_--;
                     askI++;
                 }
             } else {
@@ -186,9 +189,6 @@ contract Auction {
         // );
         // Suave.confidentialStore(crashId, "suavedex:v0:orders", bytes("abcd"));
 
-        // And now write the unmatched bids+asks back to the datastore to blockHeight+1
-        // ISSUE - is it possible for someone to call placeOffer while this is running?
-        // we'd effectively delete that offer?
         for (uint256 i = 0; i <= bidI; i++) {
             if (cancels[bids[i].clientId]) {
                 continue;
@@ -219,8 +219,7 @@ contract Auction {
             Suave.confidentialStore(record.id, "suavedex:v0:orders", value);
         }
 
-        uint matchedPrice = volPrice / matchedVol;
-        console.log("MATCHED", matchedVol, "AT", matchedPrice);
+        uint matchedPrice = matchedVol > 0 ? volPrice / matchedVol : 0;
 
         // TODO - create, sign, send tx
         // function signEthTransaction(bytes memory txn, string memory chainId, string memory signingKey) view returns (bytes memory)
