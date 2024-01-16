@@ -39,7 +39,8 @@ contract TestForge is Test, SuaveEnabled {
         bytes memory o6 = auction.placeOffer("ask", "oid5", 70, 250);
         address(auction).call(o6);
 
-        // should match the 55 buy with the 50 sell, rounded midpoint is 52
+        // should match the 55 buy with the 50 sell
+        // So 50 at 52 (50 + 55 / 2)
         bytes memory s = auction.settleAuction();
         address(auction).call(s);
 

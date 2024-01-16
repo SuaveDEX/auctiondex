@@ -27,9 +27,9 @@ contract Auction {
     }
 
     constructor() {
-        addressList = new address[](2);
-        addressList[0] = address(this);
-        addressList[1] = 0xC8df3686b4Afb2BB53e60EAe97EF043FE03Fb829;
+        addressList = new address[](1);
+        // from Suave.sol: address public constant ANYALLOWED = 0xC8df3686b4Afb2BB53e60EAe97EF043FE03Fb829;
+        addressList[0] = 0xC8df3686b4Afb2BB53e60EAe97EF043FE03Fb829;
     }
 
     function emitOffer(string calldata clientId) public payable {
@@ -220,6 +220,7 @@ contract Auction {
         }
 
         uint matchedPrice = matchedVol > 0 ? volPrice / matchedVol : 0;
+        console.log("MATCHED", matchedVol, "AT", matchedPrice);
 
         // TODO - create, sign, send tx
         // function signEthTransaction(bytes memory txn, string memory chainId, string memory signingKey) view returns (bytes memory)
@@ -249,7 +250,7 @@ contract Auction {
             if (i <= j) {
                 (arr[i], arr[j]) = (arr[j], arr[i]);
                 i++;
-                j--;
+                j = j > 0 ? j - 1 : 0;
             }
         }
         if (left < j) quickSort(arr, left, j);
